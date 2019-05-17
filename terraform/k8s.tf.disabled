@@ -1,0 +1,68 @@
+# Query the client configuration for our current service account, which shoudl
+# have permission to talk to the GKE cluster since it created it.
+data "google_client_config" "current" {}
+
+# This file contains all the interactions with Kubernetes
+provider "kubernetes" {
+  load_config_file = false
+  host             = "${google_container_cluster.vault.endpoint}"
+
+  cluster_ca_certificate = "${base64decode(google_container_cluster.vault.master_auth.0.cluster_ca_certificate)}"
+  token                  = "${data.google_client_config.current.access_token}"
+}
+
+module "sealed_secrets" {
+  source          = "./sealed-secrets-controller"
+  enabled         = "${var.sealed_secrets_enabled}"
+  cluster_name    = "${google_container_cluster.vault.name}"
+  cluster_project = "${google_container_cluster.vault.project}"
+  cluster_region  = "${google_container_cluster.vault.region}"
+
+  tls_crt = "${file("${path.module}/${var.sealed_secrets_crt_path}")}"
+  tls_key = "${file("${path.module}/${var.sealed_secrets_key_path}")}"
+
+  controller_version = "${var.sealed_secrets_controller_version}"
+
+  dependencies = ["${google_container_cluster.vault.id}"]
+}
+
+module "flux_bootstrap" {
+  source                       = "./flux"
+  enabled                      = "${var.flux_bootstrap_enabled}"
+  flux_repo_git_poll_interval  = "${var.flux_bootstrap_git_poll_interval}"
+  flux_repo_git_url            = "${var.flux_bootstrap_git_url}"
+  flux_repo_git_paths          = "${var.flux_bootstrap_git_paths}"
+  flux_repo_git_branch         = "${var.flux_bootstrap_git_branch}"
+  flux_repo_git_label          = "${var.flux_bootstrap_git_label}"
+  flux_sync_interval           = "${var.flux_bootstrap_sync_interval}"
+  flux_sync_garbage_collection = "${var.flux_bootstrap_sync_garbage_collection}"
+  flux_ssh_private_key         = "${file("${path.module}/${var.flux_bootstrap_ssh_private_key_path}")}"
+  flux_instance                = "${var.flux_bootstrap_instance_name}"
+  disable_registry_scan        = "${var.flux_bootstrap_disable_registry_scan}"
+  wait_seconds_at_start        = "${var.flux_bootstrap_wait_seconds_at_start}"
+
+  #kubernetes_flux_image          = "${var.flux_bootstrap_flux_image}"
+  #kubernetes_flux_version           = "${var.flux_bootstrap_flux_version}"
+
+  dependencies = ["${module.sealed_secrets.depended_on}"]
+}
+
+module "flux_apps" {
+  source                       = "./flux"
+  enabled                      = "${var.flux_apps_enabled}"
+  flux_repo_git_poll_interval  = "${var.flux_apps_git_poll_interval}"
+  flux_repo_git_url            = "${var.flux_apps_git_url}"
+  flux_repo_git_paths          = "${var.flux_apps_git_paths}"
+  flux_repo_git_branch         = "${var.flux_apps_git_branch}"
+  flux_repo_git_label          = "${var.flux_apps_git_label}"
+  flux_sync_interval           = "${var.flux_apps_sync_interval}"
+  flux_sync_garbage_collection = "${var.flux_apps_sync_garbage_collection}"
+  flux_ssh_private_key         = "${file("${path.module}/${var.flux_apps_ssh_private_key_path}")}"
+  flux_instance                = "${var.flux_apps_instance_name}"
+  disable_registry_scan        = "${var.flux_apps_disable_registry_scan}"
+  wait_seconds_at_start        = "${var.flux_apps_wait_seconds_at_start}"
+  kubernetes_flux_image        = "${var.flux_apps_flux_image}"
+  kubernetes_flux_version      = "${var.flux_apps_flux_version}"
+
+  dependencies = ["${module.flux_bootstrap.depended_on}"]
+}

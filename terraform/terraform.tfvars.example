@@ -1,0 +1,23 @@
+region = __PLACEHOLDER __
+project_id = __PLACEHOLDER __
+
+kubernetes_nodes_per_zone = __PLACEHOLDER __
+kubernetes_instance_type = __PLACEHOLDER __
+
+sealed_secrets_enabled = __PLACEHOLDER __
+sealed_secrets_crt = __PLACEHOLDER __
+sealed_secrets_key = __PLACEHOLDER __
+sealed_secrets_controller_version = __PLACEHOLDER __
+
+flux_bootstrap_enabled = __PLACEHOLDER __
+flux_bootstrap_git_poll_interval = __PLACEHOLDER __
+flux_bootstrap_sync_interval = __PLACEHOLDER __
+flux_bootstrap_git_url = __PLACEHOLDER __
+flux_bootstrap_git_branch = __PLACEHOLDER __
+flux_bootstrap_git_paths = [__PLACEHOLDER __]
+flux_bootstrap_git_label = __PLACEHOLDER __
+flux_bootstrap_ssh_private_key = __PLACEHOLDER __
+flux_bootstrap_sync_garbage_collection = __PLACEHOLDER __
+flux_bootstrap_instance_name = __PLACEHOLDER __
+flux_bootstrap_disable_registry_scan = __PLACEHOLDER __
+flux_bootstrap_wait_seconds_at_start = __PLACEHOLDER __

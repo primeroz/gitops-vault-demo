@@ -1,0 +1,6 @@
+terraform/.terraform*
+terraform/credentials.json
+terraform/terraform.tfvars
+terraform/terraform.tfstate*
+terraform/terraform.auto.tfvars
+terraform/secrets.auto.tfvars
